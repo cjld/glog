@@ -280,7 +280,7 @@ static GLogColor SeverityToColor(LogSeverity severity) {
   GLogColor color = COLOR_DEFAULT;
   switch (severity) {
   case GLOG_INFO:
-    color = COLOR_DEFAULT;
+    color = COLOR_GREEN;
     break;
   case GLOG_WARNING:
     color = COLOR_YELLOW;
@@ -1274,11 +1274,11 @@ void LogMessage::Init(const char* file,
   data_->has_been_flushed_ = false;
 
   // If specified, prepend a prefix to each line.  For example:
-  //    I1018 160715 f5d4fbb0 logging.cc:1153]
+  //    [I1018 160715 f5d4fbb0 logging.cc:1153]
   //    (log level, GMT month, date, time, thread_id, file basename, line)
   // We exclude the thread_id for the default thread.
   if (FLAGS_log_prefix && (line != kNoLogPrefix)) {
-    stream() << LogSeverityNames[severity][0]
+    stream() << '[' << LogSeverityNames[severity][0]
              << setw(2) << 1+data_->tm_time_.tm_mon
              << setw(2) << data_->tm_time_.tm_mday
              << ' '
