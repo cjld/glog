@@ -83,7 +83,8 @@ AC_CHECK_FUNC(pwrite,
 AX_C___ATTRIBUTE__
 # We only care about these two attributes.
 if test x"$ac_cv___attribute__" = x"yes"; then
-  ac_cv___attribute___noreturn="__attribute__ ((noreturn))"
+  # ac_cv___attribute___noreturn="__attribute__ ((noreturn))"
+  ac_cv___attribute___noreturn=
   ac_cv___attribute___noinline="__attribute__ ((noinline))"
   ac_cv___attribute___printf_4_5="__attribute__((__format__ (__printf__, 4, 5)))"
 else

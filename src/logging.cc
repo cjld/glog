@@ -380,7 +380,7 @@ const char*const LogSeverityNames[NUM_SEVERITIES] = {
 };
 
 // Has the user called SetExitOnDFatal(true)?
-static bool exit_on_dfatal = true;
+static bool exit_on_dfatal = false;
 
 const char* GetLogSeverityName(LogSeverity severity) {
   return LogSeverityNames[severity];
@@ -1490,7 +1490,7 @@ void LogMessage::SendToLog() EXCLUSIVE_LOCKS_REQUIRED(log_mutex) {
     if (write(STDERR_FILENO, message, strlen(message)) < 0) {
       // Ignore errors.
     }
-    Fail();
+    // Fail();
   }
 }
 
@@ -1508,22 +1508,13 @@ void LogMessage::RecordCrashReason(
 #endif
 }
 
-#ifdef HAVE___ATTRIBUTE__
-# define ATTRIBUTE_NORETURN __attribute__((noreturn))
-#else
-# define ATTRIBUTE_NORETURN
-#endif
-
-#if defined(OS_WINDOWS)
-__declspec(noreturn)
-#endif
-static void logging_fail() ATTRIBUTE_NORETURN;
+static void logging_fail();
 
 static void logging_fail() {
   abort();
 }
 
-typedef void (*logging_fail_func_t)() ATTRIBUTE_NORETURN;
+typedef void (*logging_fail_func_t)();
 
 GOOGLE_GLOG_DLL_DECL
 logging_fail_func_t g_logging_fail_func = &logging_fail;
@@ -2109,8 +2100,8 @@ LogMessageFatal::LogMessageFatal(const char* file, int line,
     LogMessage(file, line, result) {}
 
 LogMessageFatal::~LogMessageFatal() {
-    Flush();
-    LogMessage::Fail();
+    // Flush();
+    // LogMessage::Fail();
 }
 
 namespace base {

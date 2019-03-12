@@ -567,12 +567,24 @@ class LogSink;  // defined below
 #define LOG_STRING(severity, outvec) \
   LOG_TO_STRING_##severity(static_cast<std::vector<std::string>*>(outvec)).stream()
 
+#define VOIDIFY_0 @ac_google_namespace@::LogMessageVoidify()
+#define VOIDIFY_FATAL @ac_google_namespace@::LogMessageVoidifyFatal()
+#define VOIDIFY_INFO VOIDIFY_0
+#define VOIDIFY_WARNING VOIDIFY_0
+#define VOIDIFY_ERROR VOIDIFY_0
+
+#if !DCHECK_IS_ON()
+# define VOIDIFY_DFATAL VOIDIFY_0
+#else
+# define VOIDIFY_DFATAL VOIDIFY_FATAL
+#endif
+
 #define LOG_IF(severity, condition) \
   static_cast<void>(0),             \
-  !(condition) ? (void) 0 : @ac_google_namespace@::LogMessageVoidify() & LOG(severity)
+  !(condition) ? (void) 0 : VOIDIFY_ ## severity & LOG(severity)
 #define SYSLOG_IF(severity, condition) \
   static_cast<void>(0),                \
-  !(condition) ? (void) 0 : @ac_google_namespace@::LogMessageVoidify() & SYSLOG(severity)
+  !(condition) ? (void) 0 :  VOIDIFY_ ## severity & SYSLOG(severity)
 
 #define LOG_ASSERT(condition)  \
   LOG_IF(FATAL, !(condition)) << "Assert failed: " #condition
@@ -1384,6 +1396,14 @@ class GOOGLE_GLOG_DLL_DECL LogMessageVoidify {
   void operator&(std::ostream&) { }
 };
 
+class GOOGLE_GLOG_DLL_DECL LogMessageVoidifyFatal {
+ public:
+  LogMessageVoidifyFatal() { }
+  // This has to be an operator with a precedence lower than << but
+  // higher than ?:
+  void operator&(std::ostream&) { LogMessage::Fail(); }
+};
+
 
 // Flushes all log files that contains messages that are at least of
 // the specified severity level.  Thread-safe.
@@ -1649,6 +1669,7 @@ class GOOGLE_GLOG_DLL_DECL NullStreamFatal : public NullStream {
 // will be shown only for the thread that receives the signal.  In other
 // words, stack traces of other threads won't be shown.
 GOOGLE_GLOG_DLL_DECL void InstallFailureSignalHandler();
+GOOGLE_GLOG_DLL_DECL void PrintErrorInfo();
 
 // Installs a function that is used for writing the failure dump.  "data"
 // is the pointer to the beginning of a message to be written, and "size"

@@ -372,6 +372,20 @@ bool IsFailureSignalHandlerInstalled() {
 
 }  // namespace glog_internal_namespace_
 
+void PrintErrorInfo() {
+  const char* message = "*** Check failure stack trace: ***\n";
+  write(STDERR_FILENO, message, strlen(message));
+  DumpTimeInfo();
+#ifdef HAVE_STACKTRACE
+  void *stack[32];
+  const int depth = GetStackTrace(stack, ARRAYSIZE(stack), 1);
+  for (int i = 0; i < depth; ++i) {
+    DumpStackFrameInfo("    ", stack[i]);
+  }
+#endif
+  FlushLogFilesUnsafe(0);
+}
+
 void InstallFailureSignalHandler() {
 #ifdef HAVE_SIGACTION
   // Build the sigaction struct.
