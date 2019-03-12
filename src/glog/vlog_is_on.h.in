@@ -72,6 +72,8 @@
 # endif
 #endif
 
+extern thread_local int verbose_level__;
+
 #if defined(__GNUC__)
 // We emit an anonymous static int* variable at every VLOG_IS_ON(n) site.
 // (Normally) the first time every VLOG_IS_ON(n) site is hit,
@@ -82,11 +84,11 @@
 #define VLOG_IS_ON(verboselevel)                                \
   __extension__  \
   ({ static @ac_google_namespace@::int32* vlocal__ = &@ac_google_namespace@::kLogSiteUninitialized;           \
-     @ac_google_namespace@::int32 verbose_level__ = (verboselevel);                    \
-     (*vlocal__ >= verbose_level__) &&                          \
+     ((@ac_google_namespace@::verbose_level__ = (verboselevel)) || 1) ||                    \
+     ((*vlocal__ >= @ac_google_namespace@::verbose_level__) &&                          \
      ((vlocal__ != &@ac_google_namespace@::kLogSiteUninitialized) ||                   \
       (@ac_google_namespace@::InitVLOG3__(&vlocal__, &FLAGS_v,                         \
-                   __FILE__, verbose_level__))); })
+                   __FILE__, @ac_google_namespace@::verbose_level__)))); })
 #else
 // GNU extensions not available, so we do not support --vmodule.
 // Dynamic value of FLAGS_v always controls the logging level.

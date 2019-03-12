@@ -268,11 +268,17 @@ static bool TerminalSupportsColor() {
 
 _START_GOOGLE_NAMESPACE_
 
+thread_local int verbose_level__;
+
 enum GLogColor {
   COLOR_DEFAULT,
   COLOR_RED,
-  COLOR_GREEN,
-  COLOR_YELLOW
+  COLOR_YELLOW,
+  COLOR_INFO, // v=0
+  COLOR_INFO1, // v<10
+  COLOR_INFO2, // v<100
+  COLOR_INFO3, // v<1000
+  COLOR_INFO4, // other
 };
 
 static GLogColor SeverityToColor(LogSeverity severity) {
@@ -280,7 +286,16 @@ static GLogColor SeverityToColor(LogSeverity severity) {
   GLogColor color = COLOR_DEFAULT;
   switch (severity) {
   case GLOG_INFO:
-    color = COLOR_GREEN;
+    if (verbose_level__ == 0)
+      color = COLOR_INFO;
+    else if (verbose_level__ < 10)
+      color = COLOR_INFO1;
+    else if (verbose_level__ < 100)
+      color = COLOR_INFO2;
+    else if (verbose_level__ < 1000)
+      color = COLOR_INFO3;
+    else
+      color = COLOR_INFO4;
     break;
   case GLOG_WARNING:
     color = COLOR_YELLOW;
@@ -302,7 +317,7 @@ static GLogColor SeverityToColor(LogSeverity severity) {
 static WORD GetColorAttribute(GLogColor color) {
   switch (color) {
     case COLOR_RED:    return FOREGROUND_RED;
-    case COLOR_GREEN:  return FOREGROUND_GREEN;
+    case COLOR_INFO:  return FOREGROUND_GREEN;
     case COLOR_YELLOW: return FOREGROUND_RED | FOREGROUND_GREEN;
     default:           return 0;
   }
@@ -314,8 +329,12 @@ static WORD GetColorAttribute(GLogColor color) {
 static const char* GetAnsiColorCode(GLogColor color) {
   switch (color) {
   case COLOR_RED:     return "1";
-  case COLOR_GREEN:   return "2";
   case COLOR_YELLOW:  return "3";
+  case COLOR_INFO:   return "2";
+  case COLOR_INFO1:   return "232";
+  case COLOR_INFO2:   return "238";
+  case COLOR_INFO3:   return "244";
+  case COLOR_INFO4:   return "250";
   case COLOR_DEFAULT:  return "";
   };
   return NULL; // stop warning about return type.
@@ -704,7 +723,7 @@ static void ColoredWriteToStderr(LogSeverity severity,
   // Restores the text color.
   SetConsoleTextAttribute(stderr_handle, old_color_attrs);
 #else
-  fprintf(stderr, "\033[0;3%sm", GetAnsiColorCode(color));
+  fprintf(stderr, "\033[38;5;%sm", GetAnsiColorCode(color));
   fwrite(message, len, 1, stderr);
   fprintf(stderr, "\033[m");  // Resets the terminal to default.
 #endif  // OS_WINDOWS
@@ -1320,6 +1339,7 @@ LogMessage::~LogMessage() {
 #else // !defined(GLOG_THREAD_LOCAL_STORAGE)
   delete allocated_;
 #endif // defined(GLOG_THREAD_LOCAL_STORAGE)
+  verbose_level__ = 0;
 }
 
 int LogMessage::preserved_errno() const {
