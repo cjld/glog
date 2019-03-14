@@ -759,7 +759,7 @@ typedef std::string _Check_string;
              @ac_google_namespace@::GetReferenceableValue(val1),        \
              @ac_google_namespace@::GetReferenceableValue(val2),        \
              #val1 " " #op " " #val2))                                  \
-    log(__FILE__, __LINE__,                                             \
+    VOIDIFY_FATAL & log(__FILE__, __LINE__,                             \
         @ac_google_namespace@::CheckOpString(_result)).stream()
 #else
 // In optimized mode, use CheckOpString to hint to compiler that
@@ -770,7 +770,7 @@ typedef std::string _Check_string;
              @ac_google_namespace@::GetReferenceableValue(val1),        \
              @ac_google_namespace@::GetReferenceableValue(val2),        \
              #val1 " " #op " " #val2))                                  \
-    log(__FILE__, __LINE__, _result).stream()
+    VOIDIFY_FATAL & log(__FILE__, __LINE__, _result).stream()
 #endif  // STATIC_ANALYSIS, DCHECK_IS_ON()
 
 #if GOOGLE_STRIP_LOG <= 3
@@ -829,7 +829,7 @@ DECLARE_CHECK_STROP_IMPL(strcasecmp, false)
   while (@ac_google_namespace@::CheckOpString _result = \
          @ac_google_namespace@::Check##func##expected##Impl((s1), (s2), \
                                      #s1 " " #op " " #s2)) \
-    LOG(FATAL) << *_result.str_
+    VOIDIFY_FATAL & LOG(FATAL) << *_result.str_
 
 
 // String (char*) equality/inequality checks.
