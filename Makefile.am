@@ -13,7 +13,7 @@ AM_CXXFLAGS =
 
 # These are good warnings to turn on by default
 if GCC
-  AM_CXXFLAGS += -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
+  AM_CXXFLAGS += -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare --std=c++14
 endif
 
 # These are x86-specific, having to do with frame-pointers
